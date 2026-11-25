@@ -7,6 +7,7 @@ const DEMO_PRODUCTS = [
 ];
 let products=[],cart=[];
 const $=s=>document.querySelector(s); const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
+
 async function loadProducts() {
   try {
     const response = await fetch(`${GAS_URL}?action=products`);
