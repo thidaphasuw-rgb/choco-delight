@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Choco Delight | Chocolate made for happy moments</title>
+  <meta name="description" content="เลือกช็อกโกแลตแสนอร่อยจาก Choco Delight">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar"><a class="brand" href="#home"><span class="brand-mark">✦</span> CHOCO <span>DELIGHT</span></a><nav><a href="#products">สินค้า</a><a href="#story">เรื่องราว</a><a href="#footer">ติดต่อ</a></nav><button class="cart-btn" id="open-cart">ตะกร้า <span id="cart-count">0</span></button></header>
+<main>
+<section class="hero" id="home"><div class="hero-copy"><p class="eyebrow">A LITTLE JOY IN EVERY BITE</p><h1>ความสุขชิ้นเล็ก<br><em>ที่ละลายในใจ</em></h1><p>ช็อกโกแลตที่ตั้งใจทำ เพื่อเติมช่วงเวลาธรรมดาให้พิเศษขึ้นอีกนิด</p><a class="button dark" href="#products">เลือกช็อกโกแลต <span>↗</span></a><div class="hero-note">CRAFTED WITH LOVE · SWEETEN YOUR DAY</div></div><div class="hero-art"><div class="sun"></div><div class="hero-chocolate">CH<br><small>70%</small></div><div class="hero-caption">A treat worth slowing down for.</div></div></section>
+<section class="intro" id="story"><p class="eyebrow">OUR LITTLE CHOCOLATE SHOP</p><h2>ช็อกโกแลตดี ๆ<br>ทำให้วันดีขึ้นได้</h2><p>เลือกชิ้นโปรดของคุณ แล้วให้เราแพ็กความสุขส่งตรงถึงบ้าน</p></section>
+<section class="products-section" id="products"><div class="section-heading"><div><p class="eyebrow">OUR COLLECTION</p><h2>เลือกความอร่อย</h2></div><p>Small batch. Big happiness.</p></div><div id="product-grid" class="product-grid"><div class="loading">กำลังโหลดสินค้า…</div></div></section>
+<section class="promise"><div><span>01</span><h3>ใส่ใจทุกชิ้น</h3><p>คัดสรรและแพ็กอย่างพิถีพิถัน</p></div><div><span>02</span><h3>ส่งความสุข</h3><p>เลือกของขวัญหรือเติมความหวานให้ตัวเอง</p></div><div><span>03</span><h3>สั่งง่าย</h3><p>เลือกสินค้า กรอกที่อยู่ แล้วรอรับได้เลย</p></div></section>
+</main><footer id="footer"><a class="brand" href="#home">CHOCO <span>DELIGHT</span></a><p>Chocolate made for happy moments.</p><small>© Choco Delight</small></footer>
+<div class="overlay" id="cart-overlay" hidden><aside class="drawer"><button class="close" id="close-cart">×</button><p class="eyebrow">YOUR ORDER</p><h2>ตะกร้าสินค้า</h2><div id="cart-items"></div><div class="cart-total"><span>ยอดรวม</span><strong id="cart-total">฿0</strong></div><button class="button dark full" id="checkout-btn">ดำเนินการสั่งซื้อ</button></aside></div>
+<div class="overlay" id="checkout-overlay" hidden><section class="modal"><button class="close" id="close-checkout">×</button><p class="eyebrow">DELIVERY DETAILS</p><h2>ข้อมูลสำหรับจัดส่ง</h2><form id="checkout-form"><label>ชื่อผู้รับ<input name="name" required autocomplete="name"></label><label>เบอร์โทรศัพท์<input name="phone" required type="tel" autocomplete="tel"></label><label>ที่อยู่จัดส่ง<textarea name="address" required rows="3" autocomplete="street-address"></textarea></label><label>รหัสไปรษณีย์<input name="postcode" required inputmode="numeric"></label><label>หมายเหตุ<textarea name="note" rows="2"></textarea></label><button class="button dark full" type="submit">ยืนยันคำสั่งซื้อ</button></form><p id="checkout-status" class="status"></p></section></div>
+<script src="script.js"></script></body></html>
