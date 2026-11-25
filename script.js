@@ -1,47 +1,14 @@
-/* Choco Delight storefront. Set GAS_URL to the deployed Apps Script web app URL. */
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1C9VDvmY3R4xyuvjkBlp4OkY1pyLBAl16B2ILXWgU2OVGzWWX7XJG7UkOOWS-bZ8J/exec';
-const DEMO_PRODUCTS = [
- {SKU:'CH-01',Product_Name:'Dark Chocolate 70%',Price:89,Stock:50,Image_URL:'',Description:'ดาร์กช็อกโกแลตเข้มข้น หอมโกโก้และรสชาติสมดุล',Category:'Dark Chocolate',Status:'Active'},
- {SKU:'CH-02',Product_Name:'Milk Chocolate',Price:79,Stock:50,Image_URL:'',Description:'มิลค์ช็อกโกแลตเนื้อนุ่ม หวานละมุน',Category:'Milk Chocolate',Status:'Active'},
- {SKU:'CH-03',Product_Name:'Almond Chocolate',Price:99,Stock:30,Image_URL:'',Description:'ช็อกโกแลตผสมอัลมอนด์ กรุบกรอบทุกคำ',Category:'Nut Chocolate',Status:'Active'}
-];
-let products=[],cart=[];
-const $=s=>document.querySelector(s); const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
-
-async function loadProducts() {
-  try {
-    const response = await fetch(`${GAS_URL}?action=products`);
-
-    if (!response.ok) {
-      throw new Error('HTTP ' + response.status);
-    }
-
-    const data = await response.json();
-
-    console.log('Google Sheets API:', data);
-
-    let list = data.products || data;
-
-    if (!Array.isArray(list)) {
-      throw new Error('API ไม่ได้ส่งข้อมูลสินค้าในรูปแบบ Array');
-    }
-
-    products = list.map(p => ({
-      SKU: String(p.SKU || '').trim(),
-      Product_Name: p.Product_Name || '',
-      Price: Number(p.Price || 0),
-      Stock: Number(p.Stock || 0),
-      Image_URL: p.Image_URL || '',
-      Description: p.Description || '',
-      Category: p.Category || 'Chocolate',
-      Status: String(p.Status || 'Active').trim()
-    }));
-
-    renderProducts();
-
-  } catch (error) {
-    console.error('Load products error:', error);
-    products = DEMO_PRODUCTS;
-    renderProducts();
-  }
-}
+const PRODUCTS=[{sku:'CC-DARK70',name:'Dark Chocolate 70%',description:'ดาร์กช็อกโกแลตเข้ม 70% หอมโกโก้ รสลึกและสมดุล',price:159,image:'assets/images/dark.svg'},{sku:'CC-MILK',name:'Creamy Milk Chocolate',description:'มิลค์ช็อกโกแลตเนื้อเนียน หวานละมุน เหมาะกับทุกวัย',price:129,image:'assets/images/milk.svg'}];
+const API_URL='https://script.google.com/macros/s/AKfycbx632_o5R4z93W-6nwJ9VZpHHhcgai_6Qk_UNYwouCfS5CaAkGoYb1nyGKk_vON72X_/exec';
+let cart=JSON.parse(localStorage.getItem('cacao-cart')||'{}');
+function money(n){return n.toLocaleString('th-TH')+' ฿'}
+function renderProducts(){document.getElementById('products-grid').innerHTML=PRODUCTS.map(p=><article class="product"><img src="${p.image}" alt="${p.name}"><div class="product-info"><h3>${p.name}</h3><p>${p.description}</p><div class="price">${money(p.price)}</div><button class="btn" onclick="add('${p.sku}')">เพิ่มลงตะกร้า</button></div></article>).join('')}
+function add(sku){cart[sku]=(cart[sku]||0)+1;save();}
+function save(){localStorage.setItem('cacao-cart',JSON.stringify(cart));document.getElementById('cart-count').textContent=Object.values(cart).reduce((a,b)=>a+b,0);}
+function openCart(){renderCart();document.getElementById('cart-modal').showModal()}
+function closeCart(){document.getElementById('cart-modal').close()}
+function renderCart(){const rows=PRODUCTS.filter(p=>cart[p.sku]).map(p=><div class="cart-row"><div><strong>${p.name}</strong><div>${money(p.price)} × ${cart[p.sku]}</div></div><div><button onclick="change('${p.sku}',-1)">−</button> ${cart[p.sku]} <button onclick="change('${p.sku}',1)">+</button></div><strong>${money(p.price*cart[p.sku])}</strong></div>).join('');document.getElementById('cart-items').innerHTML=rows||'<p>ยังไม่มีสินค้าในตะกร้า</p>';document.getElementById('cart-total').textContent='รวม '+money(total());}
+function change(sku,n){cart[sku]=(cart[sku]||0)+n;if(cart[sku]<=0)delete cart[sku];save();renderCart()}
+function total(){return PRODUCTS.reduce((s,p)=>s+p.price*(cart[p.sku]||0),0)}
+document.getElementById('checkout-form').addEventListener('submit',async e=>{e.preventDefault();if(!Object.keys(cart).length){alert('กรุณาเลือกสินค้าก่อน');return}const f=new FormData(e.target);const order={name:f.get('name'),phone:f.get('phone'),address:f.get('address'),note:f.get('note'),items:PRODUCTS.filter(p=>cart[p.sku]).map(p=>({sku:p.sku,name:p.name,price:p.price,quantity:cart[p.sku]})),total:total()};const out=document.getElementById('checkout-result');if(!API_URL){out.innerHTML='<p style="color:#a33">ยังไม่ได้เชื่อม Google Sheets กรุณาตั้งค่า API_URL ตามคู่มือ README ก่อนรับคำสั่งซื้อ</p>';return}try{await fetch(API_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'createOrder',order})});out.innerHTML='<div class="success">ส่งคำสั่งซื้อแล้ว! โปรดรอร้านยืนยัน (โหมด no-cors ไม่สามารถอ่านผลยืนยันจากเซิร์ฟเวอร์ได้)</div>';cart={};save();renderCart();e.target.reset()}catch(err){out.textContent='ส่งไม่สำเร็จ กรุณาลองอีกครั้ง'}});
+renderProducts();save();
