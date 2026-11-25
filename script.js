@@ -1,5 +1,5 @@
 /* Choco Delight storefront. Set GAS_URL to the deployed Apps Script web app URL. */
-const GAS_URL = 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1C9VDvmY3R4xyuvjkBlp4OkY1pyLBAl16B2ILXWgU2OVGzWWX7XJG7UkOOWS-bZ8J/exec';
 const DEMO_PRODUCTS = [
  {SKU:'CH-01',Product_Name:'Dark Chocolate 70%',Price:89,Stock:50,Image_URL:'',Description:'ดาร์กช็อกโกแลตเข้มข้น หอมโกโก้และรสชาติสมดุล',Category:'Dark Chocolate',Status:'Active'},
  {SKU:'CH-02',Product_Name:'Milk Chocolate',Price:79,Stock:50,Image_URL:'',Description:'มิลค์ช็อกโกแลตเนื้อนุ่ม หวานละมุน',Category:'Milk Chocolate',Status:'Active'},
