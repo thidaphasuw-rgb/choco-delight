@@ -7,12 +7,40 @@ const DEMO_PRODUCTS = [
 ];
 let products=[],cart=[];
 const $=s=>document.querySelector(s); const money=n=>'฿'+Number(n||0).toLocaleString('th-TH');
-async function loadProducts(){try{if(GAS_URL.startsWith('https://')){const r=await fetch(`${GAS_URL}?action=products`);if(!r.ok)throw Error('Fetch error');const d=await r.json();products=d.products||d;}else products=DEMO_PRODUCTS;}catch(e){console.warn(e);products=DEMO_PRODUCTS;}renderProducts();}
-function renderProducts(){const grid=$('#product-grid');const active=products.filter(p=>(p.Status||'Active').toLowerCase()==='active');grid.innerHTML=active.map(p=>`<article class="product-card"><div class="product-image">${p.Image_URL?`<img loading="lazy" src="${escapeAttr(p.Image_URL)}" alt="${escapeAttr(p.Product_Name)}" onerror="this.outerHTML='<div class=\\'image-placeholder\\'>🍫</div>'">`:'<div class="image-placeholder">🍫</div>'}</div><div class="product-info"><small>${escapeHtml(p.Category||'Chocolate')}</small><h3>${escapeHtml(p.Product_Name)}</h3><p>${escapeHtml(p.Description||'Chocolate made for happy moments.')}</p><p class="stock-note">${Number(p.Stock)>0?'พร้อมส่ง':'สินค้าหมด'}</p><div class="price-row"><span class="price">${money(p.Price)}</span><button class="add-btn" aria-label="เพิ่มลงตะกร้า" onclick="addToCart('${escapeAttr(p.SKU)}')" ${Number(p.Stock)<=0?'disabled':''}>+</button></div></div></article>`).join('')||'<p class="empty">ยังไม่มีสินค้า</p>';}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}function escapeAttr(s){return escapeHtml(s);}
-function addToCart(sku){const p=products.find(x=>x.SKU===sku);if(!p)return;const row=cart.find(x=>x.SKU===sku);if(row){if(row.qty>=Number(p.Stock)){alert('จำนวนสินค้าเกินสต็อก');return;}row.qty++;}else cart.push({SKU:p.SKU,name:p.Product_Name,price:Number(p.Price),qty:1,stock:Number(p.Stock)});renderCart();$('#cart-overlay').hidden=false;}
-function changeQty(sku,delta){const item=cart.find(x=>x.SKU===sku);if(!item)return;item.qty+=delta;if(item.qty<=0)cart=cart.filter(x=>x.SKU!==sku);if(item&&item.qty>item.stock){item.qty=item.stock;alert('จำนวนสินค้าเกินสต็อก');}renderCart();}
-function renderCart(){const count=cart.reduce((s,x)=>s+x.qty,0),total=cart.reduce((s,x)=>s+x.qty*x.price,0);$('#cart-count').textContent=count;$('#cart-total').textContent=money(total);$('#cart-items').innerHTML=cart.length?cart.map(x=>`<div class="cart-item"><div><strong>${escapeHtml(x.name)}</strong><small>${money(x.price)} × ${x.qty}</small></div><div class="qty"><button onclick="changeQty('${escapeAttr(x.SKU)}',-1)">−</button><span>${x.qty}</span><button onclick="changeQty('${escapeAttr(x.SKU)}',1)">+</button></div></div>`).join(''):'<p class="empty">ยังไม่มีสินค้าในตะกร้า</p>';$('#checkout-btn').disabled=!cart.length;}
-$('#open-cart').onclick=()=>$('#cart-overlay').hidden=false;$('#close-cart').onclick=()=>$('#cart-overlay').hidden=true;$('#checkout-btn').onclick=()=>{if(!cart.length)return;$('#cart-overlay').hidden=true;$('#checkout-overlay').hidden=false;};$('#close-checkout').onclick=()=>$('#checkout-overlay').hidden=true;
-$('#checkout-form').addEventListener('submit',async e=>{e.preventDefault();const status=$('#checkout-status');const f=new FormData(e.target);const payload={action:'createOrder',customer:{name:f.get('name'),phone:f.get('phone'),address:f.get('address'),postcode:f.get('postcode'),note:f.get('note')},items:cart.map(x=>({SKU:x.SKU,quantity:x.qty})),total:0};payload.total=cart.reduce((s,x)=>s+x.price*x.qty,0);status.textContent='กำลังส่งคำสั่งซื้อ…';if(!GAS_URL.startsWith('https://')){status.textContent='โหมดตัวอย่าง: ยังไม่ได้เชื่อม Google Sheets กรุณาตั้งค่า GAS_URL ใน script.js ก่อนรับออเดอร์จริง';return;}try{const response=await fetch(GAS_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});const data=await response.json();if(!data.success)throw Error(data.message||'ไม่สามารถบันทึกคำสั่งซื้อ');status.textContent=`สั่งซื้อสำเร็จ! หมายเลขออเดอร์ ${data.orderId}`;cart=[];renderCart();e.target.reset();}catch(err){status.textContent='ส่งคำสั่งซื้อไม่สำเร็จ: '+err.message+' กรุณาลองอีกครั้ง';}});
-loadProducts();renderCart();
+async function loadProducts() {
+  try {
+    const response = await fetch(`${GAS_URL}?action=products`);
+
+    if (!response.ok) {
+      throw new Error('HTTP ' + response.status);
+    }
+
+    const data = await response.json();
+
+    console.log('Google Sheets API:', data);
+
+    let list = data.products || data;
+
+    if (!Array.isArray(list)) {
+      throw new Error('API ไม่ได้ส่งข้อมูลสินค้าในรูปแบบ Array');
+    }
+
+    products = list.map(p => ({
+      SKU: String(p.SKU || '').trim(),
+      Product_Name: p.Product_Name || '',
+      Price: Number(p.Price || 0),
+      Stock: Number(p.Stock || 0),
+      Image_URL: p.Image_URL || '',
+      Description: p.Description || '',
+      Category: p.Category || 'Chocolate',
+      Status: String(p.Status || 'Active').trim()
+    }));
+
+    renderProducts();
+
+  } catch (error) {
+    console.error('Load products error:', error);
+    products = DEMO_PRODUCTS;
+    renderProducts();
+  }
+}
